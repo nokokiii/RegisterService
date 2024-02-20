@@ -22,3 +22,12 @@ pip install -r ./requirements.txt
 
 ## Set up Database and .env
 
+### Installing SurrealDB on Windows
+
+Here are the docs for [Installing SurrealDB on Windows](https://docs.surrealdb.com/docs/installation/windows)
+
+### Starting SurrealDB Database
+
+```commandline
+surreal start --log trace --user root --pass root --bind 0.0.0.0:9000 --auth memory
+```
