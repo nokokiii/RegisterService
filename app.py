@@ -6,6 +6,7 @@ SUCCESS = 200
 
 app = Flask(__name__)
 
+
 @app.route("/users", methods=["GET"])
 def get_users():
     """
