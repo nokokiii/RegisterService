@@ -6,7 +6,7 @@ from faker.providers import DynamicProvider
 DB_CONFIG = dotenv_values(".env")
 
 
-async def db(query: str) -> None:
+async def db(query: str):
     """
     This function is connecting to the database and execute query
     """
@@ -14,7 +14,9 @@ async def db(query: str) -> None:
         await database.signin({"user": DB_CONFIG["USER"], "pass": DB_CONFIG["PASSWORD"]})
         await database.use(DB_CONFIG["NAMESPACE"], DB_CONFIG["DATABASE"])
 
-        await database.query(query)
+        response = await database.query(query)
+
+    return response[0]["result"]
 
 
 async def init_db() -> None:
@@ -40,8 +42,6 @@ async def init_db() -> None:
         )
         fake.add_provider(group_name)
 
-        for _ in range(100):
-            user_query = (f"CREATE Users SET firstName = '{fake.first_name()}',"
-                          f" lastName = '{fake.last_name()}', birthYear = {fake.year()},"
-                          f" group = {fake.group_name()}")
+        for i in range(100):
+            user_query = (f'CREATE Users SET firstName = "{fake.first_name()}", lastName = "{fake.last_name()}", birthYear = {fake.year()}, group = "{fake.group_name()}";')
             await database.query(user_query)

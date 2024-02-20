@@ -1,9 +1,13 @@
+import asyncio
+
 from flask import Flask, jsonify, request
 
 from .logic import Logic
+from .db import init_db
 
 app = Flask(__name__)
 logic = Logic()
+asyncio.run(init_db())
 
 
 @app.errorhandler(404)
@@ -16,7 +20,7 @@ def get_users():
     return logic.users_list_controller()
 
 
-@app.route("/users/<str:user_id>", methods=["GET"])
+@app.route("/users/<user_id>", methods=["GET"])
 def get_user(user_id):
     return logic.user_controller(user_id)
 
@@ -27,12 +31,16 @@ def create_user():
     return logic.create_user_controller(data)
 
 
-@app.route("/users/<str:user_id>", methods=["PATCH"])
+@app.route("/users/<user_id>", methods=["PATCH"])
 def update_user(user_id: str):
     data = request.get_json()
     return logic.update_user_controller(user_id, data)
 
 
-@app.route("/users/<str:user_id>", methods=["DELETE"])
+@app.route("/users/<user_id>", methods=["DELETE"])
 def delete_user(user_id: str):
     return logic.delete_user_controller(user_id)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

@@ -10,8 +10,9 @@ class Logic:
         """
         Return list of all users
         """
-        query = "SELECT * FROM Users"
+        query = "SELECT * FROM Users;"
         users = asyncio.run(db(query))
+
         return jsonify(users), 200
 
     def user_controller(self, user_id: str) -> tuple[[], int]:
@@ -19,7 +20,7 @@ class Logic:
         Return user by id
         """
         try:
-            query = f"SELECT * FROM ONLY Users:{user_id}"
+            query = f"SELECT * FROM ONLY Users:{user_id};"
             if user_info := asyncio.run(db(query)):
                 return jsonify(user_info), 200
             else:
