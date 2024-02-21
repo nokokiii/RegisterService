@@ -15,29 +15,29 @@ def page_not_found():
     return jsonify({'message': 'Endpoint not found'}), 404
 
 
-@app.route("/users", methods=["GET"])
+@app.get("/users")
 def get_users():
     return logic.users_list_controller()
 
 
-@app.route("/users/<user_id>", methods=["GET"])
+@app.get("/users/<user_id>")
 def get_user(user_id):
     return logic.user_controller(user_id)
 
 
-@app.route("/users", methods=["POST"])
+@app.post("/users")
 def create_user():
     data = request.get_json()
     return logic.create_user_controller(data)
 
 
-@app.route("/users/<user_id>", methods=["PATCH"])
+@app.patch("/users/<user_id>")
 def update_user(user_id: str):
     data = request.get_json()
     return logic.update_user_controller(user_id, data)
 
 
-@app.route("/users/<user_id>", methods=["DELETE"])
+@app.delete("/users/<user_id>")
 def delete_user(user_id: str):
     return logic.delete_user_controller(user_id)
 

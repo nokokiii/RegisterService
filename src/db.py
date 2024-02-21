@@ -42,6 +42,6 @@ async def init_db() -> None:
         )
         fake.add_provider(group_name)
 
-        for i in range(100):
+        for _ in range(100):
             user_query = (f'CREATE Users SET firstName = "{fake.first_name()}", lastName = "{fake.last_name()}", birthYear = {fake.year()}, group = "{fake.group_name()}";')
             await database.query(user_query)

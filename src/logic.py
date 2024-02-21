@@ -6,7 +6,7 @@ from .db import db
 
 
 class Logic:
-    def users_list_controller(self) -> tuple[[], int]:
+    def users_list_controller(self) -> tuple[dict, int]:
         """
         Return list of all users
         """
@@ -15,7 +15,7 @@ class Logic:
 
         return jsonify(users), 200
 
-    def user_controller(self, user_id: str) -> tuple[[], int]:
+    def user_controller(self, user_id: str) -> tuple[dict, int]:
         """
         Return user by id
         """
@@ -28,7 +28,7 @@ class Logic:
         except:
             return jsonify({"message": "There was a problem while getting user"}), 500
 
-    def create_user_controller(self, data: dict) -> tuple[[], int]:
+    def create_user_controller(self, data: dict) -> tuple[dict, int]:
         """
         Create new user
         """
@@ -43,30 +43,30 @@ class Logic:
         except:
             return jsonify({"message": "There was a problem while updating the user"}), 500
 
-    def update_user_controller(self, user_id: str, data: dict) -> tuple[[], int]:
+    def update_user_controller(self, user_id: str, data: dict) -> tuple[dict, int]:
         """
         Update user
         """
         query = f"UPDATE Users:{user_id} SET "
         is_correct = False
 
-        if "firstName" in data.keys():
+        if "firstName" in data:
             query += f'firstName = "{data["firstName"]}"'
             is_correct = True
-        if "lastName" in data.keys():
+        if "lastName" in data:
             query += f'lastName = "{data["lastName"]}"'
             is_correct = True
-        if "birthYear" in data.keys():
+        if "birthYear" in data:
             query += f'birthYear = "{data["birthYear"]}"'
             is_correct = True
-        if "group" in data.keys():
+        if "group" in data:
             query += f'group = "{data["group"]}"'
             is_correct = True
 
         if not is_correct:
             return jsonify({"message": "The provided data is invalid"}), 403
 
-        query = query[:-1] + f" WHERE id = Users:{user_id};"
+        query = f"{query[:-1]} WHERE id = Users:{user_id};"
 
         try:
             res = asyncio.run(db(query))
@@ -77,7 +77,7 @@ class Logic:
             return jsonify({"message": "The user with provided id does not exist"}), 404
         return jsonify({"message": "User updated"}), 200
 
-    def delete_user_controller(self, user_id: str) -> tuple[[], int]:
+    def delete_user_controller(self, user_id: str) -> tuple[dict, int]:
         """
         Delete user
         """
