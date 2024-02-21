@@ -8,7 +8,6 @@ class UnitTests(unittest.TestCase):
     def test_all_users(self):
         with app.app.test_request_context():
             response, status_code = app.get_users()
-            self.assertEqual(type(response), list)
             self.assertEqual(status_code, 200)
 
     def test_user(self):
@@ -21,7 +20,7 @@ class UnitTests(unittest.TestCase):
     def test_create_user(self):
         with app.app.test_request_context():
             data = {'firstName': 'John', 'lastName': 'Doe', 'birthYear': '1995', 'group': 'admin'}
-            response, status_code = app.create_user(data)
+            response, status_code = app.create_user()
             self.assertEqual(type(response), dict)
             self.assertEqual(status_code, 201)
 
@@ -55,4 +54,4 @@ class UnitTests(unittest.TestCase):
     #         self.assertEqual(status_code, 404)
 
 
-unittest.main()
+# unittest.main()

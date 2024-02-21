@@ -80,10 +80,5 @@ class IntegrationTest(unittest.TestCase):
 
         response = self.app.get(f"/users/{user_id}")
 
-        print(response.json)
         self.assertEqual(response.status_code, 404)
         
-
-    def test(self):
-        pass
-    
