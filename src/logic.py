@@ -10,8 +10,8 @@ class Logic:
         """
         Return list of all users
         """
-        query = "SELECT * FROM Users;"
-        users = asyncio.run(db(query))
+        query = "SELECT firstName, lastName, (2024  - birthYear) AS age, group FROM Users;"
+        users = asyncio.run(db(query))                                              
 
         return jsonify(users), 200
 
@@ -20,7 +20,7 @@ class Logic:
         Return user by id
         """
         try:
-            query = f"SELECT * FROM ONLY Users:{user_id};"
+            query = f"SELECT firstName, lastName, (2024  - birthYear) AS age, group FROM ONLY Users:{user_id};"
             if user_info := asyncio.run(db(query)):
                 return jsonify(user_info), 200
             else:
@@ -37,10 +37,11 @@ class Logic:
             return jsonify({"message": "The provided data is not correct"}), 403
 
         try:
-            query = f'CREATE Users SET firstName = "{data["firstName"]}", lastName = "{data["lastName"]}", birthYear = "{data["birthYear"]}", group = "{data["group"]};'
-            asyncio.run(db(query))
-            return jsonify({"message": "User created"}), 201
-        except:
+            query = f'CREATE Users SET firstName = "{data["firstName"]}", lastName = "{data["lastName"]}", birthYear = {data["birthYear"]}, group = "{data["group"]}";'
+            response = asyncio.run(db(query))
+            return jsonify({"message": "User created", "id": response[0]["id"][6:]}), 201
+        except Exception as e:
+            print(e)
             return jsonify({"message": "There was a problem while updating the user"}), 500
 
     def update_user_controller(self, user_id: str, data: dict) -> tuple[dict, int]:
@@ -51,16 +52,16 @@ class Logic:
         is_correct = False
 
         if "firstName" in data:
-            query += f'firstName = "{data["firstName"]}"'
+            query += f'firstName = "{data["firstName"]}",'
             is_correct = True
         if "lastName" in data:
-            query += f'lastName = "{data["lastName"]}"'
+            query += f'lastName = "{data["lastName"]}",'
             is_correct = True
         if "birthYear" in data:
-            query += f'birthYear = "{data["birthYear"]}"'
+            query += f'birthYear = "{data["birthYear"]}",'
             is_correct = True
         if "group" in data:
-            query += f'group = "{data["group"]}"'
+            query += f'group = "{data["group"]}",'
             is_correct = True
 
         if not is_correct:
@@ -82,7 +83,7 @@ class Logic:
         Delete user
         """
         try:
-            query = f"DELETE ONLY Users:{user_id};"
+            query = f"DELETE Users:{user_id};"
             asyncio.run(db(query))
             return jsonify({"message": "User deleted"}), 200
         except:
