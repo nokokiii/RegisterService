@@ -84,7 +84,9 @@ class Logic:
         """
         try:
             query = f"DELETE Users:{user_id};"
-            asyncio.run(db(query))
-            return jsonify({"message": "User deleted"}), 200
+            if res := asyncio.run(db(query)):
+                return jsonify({"message": "User deleted"}), 200
+            else:
+                return jsonify({"message": "User with provided id does not exist"}), 404
         except:
             return jsonify({"message": "There was a problem while deleting user"}), 500
