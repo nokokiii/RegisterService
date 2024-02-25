@@ -2,88 +2,154 @@ import asyncio
 
 from flask import jsonify
 
-from .db import db
+from src.db import Database
 
 
 class Logic:
-    def users_list_controller(self) -> tuple[[], int]:
-        """
-        Return list of all users
-        """
-        query = "SELECT * FROM Users;"
-        users = asyncio.run(db(query))
+    def __init__(self):
+        self.db = Database()
 
-        return jsonify(users), 200
-
-    def user_controller(self, user_id: str) -> tuple[[], int]:
+    def users_list_controller(self) -> dict:
         """
-        Return user by id
+        Return the list of users from the database.
+
+        Returns:
+            dict: A dictionary containing the status and response of the operation.
+                - If the operation is successful, the status will be "OK" and the response will contain the user list.
+                - If there is an error, the status will be "ERR" and the response will contain an error message.
+        
+        Raises:
+            Exception: If there is a problem while getting users from the database.
         """
         try:
-            query = f"SELECT * FROM ONLY Users:{user_id};"
-            if user_info := asyncio.run(db(query)):
-                return jsonify(user_info), 200
-            else:
-                return jsonify({"message": "User with provided id doesn't exist"}), 404
-        except:
-            return jsonify({"message": "There was a problem while getting user"}), 500
+            if db_res := self.db.get_users()[0] and db_res and "status" not in db_res:
+                if db_res["status"] == "OK":
+                    return {"status": "OK", "response": db_res["response"]}
+                elif db_res["status"] == "ERR":
+                    return {"status": "ERR", "response": db_res["response"]}
+        except Exception as e:
+            return {"status": "ERR", "response": "There was a problem while getting users", "error": str(e)}
+        return {"status": "ERR", "response": db_res, "error": "There was a problem while getting users"}
+              
 
-    def create_user_controller(self, data: dict) -> tuple[[], int]:
+    def user_controller(self, user_id: str) -> dict:
         """
-        Create new user
+        Return the user information by ID.
+
+        Args:
+            user_id (str): The ID of the user.
+
+        Returns:
+            dict: A dictionary containing the status and response of the operation.
+                - If the operation is successful, the status will be "OK" and the response will contain the user information.
+                - If there is an error, the status will be "ERR" and the response will contain an error message.
+
+        Raises:
+            Exception: If there is a problem while getting the user from the database.
+        """
+        try:
+            if db_res := self.db.get_user(user_id)[0] and db_res and "status" not in db_res:
+                if db_res["status"] == "OK":
+                    return {"status": "OK", "response": db_res["response"]}
+                elif db_res["status"] == "ERR":
+                    return {"status": "ERR", "response": db_res["response"], "error": "There was a problem while getting the user"}
+                elif len(db_res["results"]) == 0:
+                    return {"status": "No_DATA", "response": "The user with provided id does not exist"}
+        except Exception as e:
+            return {"status": "ERR", "response": "There was a problem while getting the user", "error": str(e)}
+        return {"status": "ERR", "response": db_res, "error": "There was a problem while getting the user"}
+
+
+    def create_user_controller(self, data: dict) -> dict:
+        """
+        Create user in the database.
+
+        Args:
+            data (dict): The user data.
+
+        Returns:
+            dict: A dictionary containing the status and response of the operation.
+                - If the operation is successful, the status will be "OK" and the response will contain a success message.
+                - If there is an error, the status will be "ERR" and the response will contain an error message.
+
+        Raises:
+            Exception: If there is a problem while creating the user in the database.
         """
         required_keys = ['firstName', 'lastName', 'birthYear', 'group']
         if not all(key in data for key in required_keys):
-            return jsonify({"message": "The provided data is not correct"}), 403
+            return {"status": "BAD_REQUEST", "response": "The provided data is missing values"}
 
         try:
-            query = f'CREATE Users SET firstName = "{data["firstName"]}", lastName = "{data["lastName"]}", birthYear = "{data["birthYear"]}", group = "{data["group"]};'
-            asyncio.run(db(query))
-            return jsonify({"message": "User created"}), 201
-        except:
-            return jsonify({"message": "There was a problem while updating the user"}), 500
+            if db_res := self.db.create_user(data)[0] and db_res and "status" not in db_res:
+                if db_res["status"] == "OK":
+                    return {"status": "OK", "response": "User created"}
+                elif db_res["status"] == "ERR":
+                    return {"status": "ERR", "response": db_res["response"], "error": "There was a problem while creating the user"}
+        except Exception as e:
+            return {"status": "ERR", "response": "There was a problem while creating the user", "error": str(e)}
+        return {"status": "ERR", "response": db_res, "error": "There was a problem while creating the user"}
 
-    def update_user_controller(self, user_id: str, data: dict) -> tuple[[], int]:
+
+    def update_user_controller(self, user_id: str, data: dict) -> dict:
         """
-        Update user
+        Update user in the database.
+
+        Args:
+            user_id (str): The ID of the user.
+            data (dict): The user data.
+
+        Returns:
+            dict: A dictionary containing the status and response of the operation.
+                - If the operation is successful, the status will be "OK" and the response will contain a success message.
+                - If there is an error, the status will be "ERR" and the response will contain an error message.
+
+        Raises:
+            Exception: If there is a problem while updating the user in the database.
         """
         query = f"UPDATE Users:{user_id} SET "
-        is_correct = False
 
-        if "firstName" in data.keys():
-            query += f'firstName = "{data["firstName"]}"'
-            is_correct = True
-        if "lastName" in data.keys():
-            query += f'lastName = "{data["lastName"]}"'
-            is_correct = True
-        if "birthYear" in data.keys():
-            query += f'birthYear = "{data["birthYear"]}"'
-            is_correct = True
-        if "group" in data.keys():
-            query += f'group = "{data["group"]}"'
-            is_correct = True
+        is_firstname = True if "firstName" in data else "False"
+        is_lastname = True if "lastName" in data else "False"
+        is_birthyear = True if "birthYear" in data else "False"
+        is_group = True if "group" in data else "False"
 
-        if not is_correct:
-            return jsonify({"message": "The provided data is invalid"}), 403
 
-        query = query[:-1] + f" WHERE id = Users:{user_id};"
+        if not any([is_firstname, is_lastname, is_birthyear, is_group]):
+            return {"status": "BAD_REQUEST", "response": "The provided data is missing values", "error": "The provided data is missing values"}
 
         try:
-            res = asyncio.run(db(query))
-        except:
-            return jsonify({"message": "There was problem updating the user"}), 500
+            if db_res := self.db.update_user(query, is_firstname, is_lastname, is_birthyear, is_group)[0] and db_res and "status" not in db_res:
+                if db_res["status"] == "OK":
+                    return {"status": "OK", "response": "User updated"}
+                elif db_res["status"] == "ERR":
+                    return {"status": "ERR", "response": db_res["response"], "error": "There was a problem while updating the user"}
+        except Exception as e:
+            return {"status": "ERR", "response": "There was a problem while updating the user", "error": str(e)}
+        return {"status": "ERR", "response": db_res, "error": "There was a problem while updating the user"}
 
-        if not res:
-            return jsonify({"message": "The user with provided id does not exist"}), 404
-        return jsonify({"message": "User updated"}), 200
 
-    def delete_user_controller(self, user_id: str) -> tuple[[], int]:
+    def delete_user_controller(self, user_id: str) -> dict:
         """
-        Delete user
+        Delete user from the database.
+
+        Args:
+            user_id (str): The ID of the user.
+            
+        Returns:
+            tuple: A tuple containing the status and response of the operation.
+                - If the operation is successful, the status will be "OK" and the response will contain a success message.
+                - If there is an error, the status will be "ERR" and the response will contain an error message.
+
+        Raises:
+            Exception: If there is a problem while deleting the user from the database.
         """
         try:
-            query = f"DELETE ONLY Users:{user_id};"
-            asyncio.run(db(query))
-            return jsonify({"message": "User deleted"}), 200
-        except:
-            return jsonify({"message": "There was a problem while deleting user"}), 500
+            if db_res := self.db.delete_user(user_id)[0] and db_res and "status" not in db_res:
+                if db_res["status"] == "OK":
+                    return {"status": "OK", "response": "User deleted"}
+                elif db_res["status"] == "ERR":
+                    return {"status": "ERR", "response": db_res["response"], "error": "There was a problem while deleting the user"}
+        except Exception as e:
+            return {"status": "ERR", "response": "There was a problem while deleting the user", "error": str(e)}
+        return {"status": "ERR", "response": db_res, "error": "There was a problem while deleting the user"}
+    
