@@ -1,47 +1,38 @@
-from surrealdb import Surreal
-from dotenv import dotenv_values
-from faker import Faker
-from faker.providers import DynamicProvider
-
-DB_CONFIG = dotenv_values(".env")
+from src.db_driver import connection
 
 
-async def db(query: str):
-    """
-    This function is connecting to the database and execute query
-    """
-    async with Surreal("ws://localhost:9000/rpc") as database:
-        await database.signin({"user": DB_CONFIG["USER"], "pass": DB_CONFIG["PASSWORD"]})
-        await database.use(DB_CONFIG["NAMESPACE"], DB_CONFIG["DATABASE"])
+class Database:
+    def __init__(self):
+        self.conn = connection
+    
+    def get_users(self):
+        query = "SELECT * FROM Users;"
+        return self.conn(query)
 
-        response = await database.query(query)
+    def get_user(self, user_id: str):
+        query = f'SELECT * FROM Users WHERE id = "{user_id}";'
+        return self.conn(query)
 
-    return response[0]["result"]
+    def create_user(self, data: dict):
+        query = (f'CREATE Users SET firstName = "{data["firstName"]}", lastName = "{data["lastName"]}", birthYear = {data["birthYear"]}, group = "{data["group"]}";')
+        return self.conn(query)
+    
+    def update_user(self, user_id: str, is_firstname: str, is_lastname: str, is_birthyear: str, is_group: str, data: dict):
+        query = f'UPDATE Users:{user_id} SET '
 
+        if is_firstname:
+            query += f'firstName = "{data["firstName"]}"'
+        if is_lastname:
+            query += f'lastName = "{data["lastName"]}"'
+        if is_birthyear:
+            query += f'birthYear = "{data["birthYear"]}"'
+        if is_group:
+            query += f'group = "{data["group"]}"'
 
-async def init_db() -> None:
-    """
-    This function initializes the database and create users
-    """
-    async with Surreal("ws://localhost:9000/rpc") as database:
-        await database.signin({"user": DB_CONFIG["USER"], "pass": DB_CONFIG["PASSWORD"]})
-        await database.use(DB_CONFIG["NAMESPACE"], DB_CONFIG["DATABASE"])
-
-        table_query = ("DEFINE TABLE Users SCHEMAFULL;"
-                       "DEFINE FIELD firstName ON Users type string;"
-                       "DEFINE FIELD lastName ON Users type string;"
-                       "DEFINE FIELD birthYear ON Users type int;"
-                       "DEFINE FIELD group ON Users type string;")
-
-        await database.query(table_query)
-
-        fake = Faker()
-        group_name = DynamicProvider(
-            provider_name="group_name",
-            elements=["user", "premium", "admin"]
-        )
-        fake.add_provider(group_name)
-
-        for i in range(100):
-            user_query = (f'CREATE Users SET firstName = "{fake.first_name()}", lastName = "{fake.last_name()}", birthYear = {fake.year()}, group = "{fake.group_name()}";')
-            await database.query(user_query)
+        query = f"{query[:-1]} WHERE id = Users:{user_id};"
+        return self.conn(query)
+    
+    def delete_user(self, user_id: str):
+        query = f'DELETE FROM Users WHERE id = "{user_id}";'
+        return self.conn(query)
+    
