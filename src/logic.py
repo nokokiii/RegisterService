@@ -1,7 +1,3 @@
-import asyncio
-
-from flask import jsonify
-
 from src.db import Database
 
 
@@ -26,7 +22,7 @@ class Logic:
                 if db_res["status"] == "OK":
                     return {"status": "OK", "response": db_res["response"]}
                 elif db_res["status"] == "ERR":
-                    return {"status": "ERR", "response": db_res["response"]}
+                    return {"status": "ERR", "response": db_res["response"], "error": "There was a problem while getting users"}
         except Exception as e:
             return {"status": "ERR", "response": "There was a problem while getting users", "error": str(e)}
         return {"status": "ERR", "response": db_res, "error": "There was a problem while getting users"}
