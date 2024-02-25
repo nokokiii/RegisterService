@@ -29,5 +29,37 @@ Here are the docs for [Installing SurrealDB on Windows](https://docs.surrealdb.c
 ### Starting SurrealDB Database
 
 ```commandline
-surreal start --log trace --user root --pass root --bind 0.0.0.0:9000 --auth memory
+surreal start --log trace --user username --pass password --bind 0.0.0.0:9000 --auth memory
 ```
+
+### Create .env file
+
+Create a .env file in the root directory of the project and add the following
+
+```
+USER=username
+PASSWORD=password
+NAMESPACE=namespace
+DATABASE=database
+```
+
+## Run the application
+
+Run Flask application
+
+```commandline
+py -m src.app
+```
+
+## Testing
+
+Run tests
+
+```commandline
+py -m src.tests.run_tests
+```
+
+## Authors
+
+- [nokokiii](https://github.com/nokokiii)
+
