@@ -1,6 +1,6 @@
 import unittest
 
-from tests.test_integration import IntegrationTest
+from tests.test_integration import TestUserEndpoints
 from tests.test_get_users import GetUsers
 from tests.test_get_user import GetUser
 from tests.test_create_user import CreateUser
@@ -16,6 +16,7 @@ if __name__ == '__main__':
     suite.addTests(loader.loadTestsFromTestCase(CreateUser))
     suite.addTests(loader.loadTestsFromTestCase(UpdateUser))
     suite.addTests(loader.loadTestsFromTestCase(DeleteUser))
+    suite.addTests(loader.loadTestsFromTestCase(TestUserEndpoints))
 
     runner = unittest.TextTestRunner()
     result = runner.run(suite)

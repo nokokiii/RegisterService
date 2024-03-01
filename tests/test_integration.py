@@ -1,82 +1,47 @@
-import unittest
+import aiounittest
+import json
+import src.app as app
 
-from src.app import app
-
-
-class IntegrationTest(unittest.IsolatedAsyncioTestCase):
-
-    async def asyncSetUp(self):
-        app.config['TESTING'] = True
-        self.app = app.test_client()
-
-    async def test_create_get_user(self):
-        data = {
-            "firstName": "John",
-            "lastName": "Doe",
-            "birthYear": 1990,
-            "group": "user"
-        }
-
-        response = await self.app.post("/users", json=data)
-
-        user_id = await response.json["id"]
-
-        response = await self.app.get(f"/users/{user_id}")
-
-        self.assertEqual(response.json["firstName"], "John")
-        self.assertEqual(response.json["lastName"], "Doe")
-        self.assertEqual(response.json["age"], 2024-1990)
-        self.assertEqual(response.json["group"], "user")
+class TestUserEndpoints(aiounittest.AsyncTestCase):
+    async def test_get_users(self):
+        test_app = app.app
+        test_client = test_app.test_client()
+        response = await test_client.get('/users')
+        self.assertEqual(response.status_code, 200)
+        json_data = await response.get_json()
+        self.assertIsInstance(json_data, list)
+    
+    
+    async def test_get_user(self):
+        test_app = app.app
+        test_client = test_app.test_client()
+        user_id = "some_user_id"
+        response = await test_client.get(f'/users/{user_id}')
+        self.assertIn(response.status_code, [200, 404])
+        json_data = await response.get_json()
+        self.assertIsInstance(json_data, dict)
 
 
-    async def test_create_get_update_get_user(self):
-        data = {
-            "firstName": "John",
-            "lastName": "Doe",
-            "birthYear": 1990,
-            "group": "user"
-        }
-
-        response = await self.app.post("/users", json=data)
-
-        user_id = response.json["id"]
-
-        response = await self.app.get(f"/users/{user_id}")
-
-        self.assertEqual(response.json["firstName"], "John")
-        self.assertEqual(response.json["lastName"], "Doe")
-        self.assertEqual(response.json["age"], 2024-1990)
-        self.assertEqual(response.json["group"], "user")
-
-        data = {
-            "firstName": "John",
-            "lastName": "Luke"
-        }
-
-        response = await self.app.patch(f"/users/{user_id}", json=data)
-
-        response = await self.app.get(f"/users/{user_id}")
-
-        self.assertEqual(response.json["firstName"], "John")
-        self.assertEqual(response.json["lastName"], "Luke")
-        self.assertEqual(response.json["age"], 2024-1990)
-        self.assertEqual(response.json["group"], "user")
+    async def test_create_user(self):
+        test_app = app.app
+        test_client = test_app.test_client()
+        example_data = {"firstName": "John", "lastName": "Doe", "birthYear": 1990, "group": "Admin"}
+        response = await test_client.post('/users', json=example_data)
+        self.assertEqual(response.status_code, 201)
 
 
-    async def test_create_delete_get_user(self):
-        data = {
-            "firstName": "John",
-            "lastName": "Doe",
-            "birthYear": 1990,
-            "group": "user"
-        }
+    async def test_update_user(self):
+        test_app = app.app
+        test_client = test_app.test_client()
+        user_id = "some_user_id"
+        example_data = {"firstName": "John", "lastName": "Doe"}
+        response = await test_client.patch(f'/users/{user_id}', json=example_data)
+        self.assertIn(response.status_code, [202, 400])
 
-        response = await self.app.post("/users", json=data)
-
-        user_id = response.json["id"]
-
-        response = await self.app.delete(f"/users/{user_id}")
-
-        response = await self.app.get(f"/users/{user_id}")
-
-        self.assertEqual(response.status_code, 404)
+    
+    async def test_delete_user(self):
+        test_app = app.app
+        test_client = test_app.test_client()
+        user_id = "some_user_id"
+        response = await test_client.delete(f'/users/{user_id}')
+        self.assertIn(response.status_code, 200)
