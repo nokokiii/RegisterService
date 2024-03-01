@@ -16,7 +16,7 @@ async def connection(query: str):
 
         response = await database.query(query)
 
-    return response[0]["result"]
+    return response[0]
 
 
 async def init_db() -> None:
