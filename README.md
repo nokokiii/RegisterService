@@ -56,7 +56,7 @@ py -m src.app
 Run tests
 
 ```commandline
-py -m src.tests.run_tests
+py -m tests.run_tests
 ```
 
 ## Authors
