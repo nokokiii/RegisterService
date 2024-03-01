@@ -65,7 +65,7 @@ async def get_user(user_id: str):
 
 @app.post("/users")
 async def create_user():
-    data = request.get_json()
+    data = await request.get_json()
     response = await logic.create_user_controller(data)
 
     if "status" not in response:
@@ -86,7 +86,7 @@ async def create_user():
 
 @app.patch("/users/<user_id>")
 async def update_user(user_id: str):
-    data = request.get_json()
+    data = await request.get_json()
     response = await logic.update_user_controller(user_id, data)
 
     if "status" not in response:
