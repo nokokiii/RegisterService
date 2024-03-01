@@ -1,5 +1,4 @@
 surrealdb
-Flask
 quart
 python-dotenv
 faker
